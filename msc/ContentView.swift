@@ -46,6 +46,7 @@ struct ContentView: View {
     @State private var password = "";
     @State private var userIsLoggedIn = false;
     @State private var isHome = 1;
+    @State private var isOnSignUp = true
     var img  = UIImage(systemName: "house")
     let homeButton = UIButton()
     @State private var chars:[Individual]?
@@ -59,7 +60,11 @@ struct ContentView: View {
             main
             
         } else {
-            content
+            if isOnSignUp{
+                content
+            } else {
+                content2
+            }
         }
     }
     
@@ -271,7 +276,7 @@ struct ContentView: View {
                 .offset(y:100)
                 
                 Button {
-                    login()
+                    isOnSignUp=false
                 } label : {
                     Text("Already have an account? Login")
                         .bold()
@@ -284,7 +289,71 @@ struct ContentView: View {
             .onAppear() {
                 Auth.auth().addStateDidChangeListener { auth, user in
                     if user != nil {
-                        userIsLoggedIn.toggle()
+                        userIsLoggedIn = true
+                    }
+                }
+            }
+        }
+        .ignoresSafeArea()
+    }
+    
+    var content2: some View {
+        ZStack {
+            mainBg
+            
+            VStack(spacing: 20){
+                Text("Welcome").foregroundColor(Color.white).font(.system(size:40, weight: .bold, design: .rounded)).offset(x:-100, y:-100)
+                    
+                TextField("Email", text:$email).foregroundColor(.white) .textFieldStyle(.plain)
+                    .placeholder(when:email.isEmpty){
+                        Text("Email")
+                            .foregroundColor(.white)
+                            .bold()
+                    }
+                
+                Rectangle().frame(width: 350, height: 1)
+                    .foregroundColor(.white)
+                
+                SecureField("Password", text:$password).foregroundColor(.white) .textFieldStyle(.plain)
+                    .placeholder(when:email.isEmpty){
+                        Text("Password")
+                            .foregroundColor(.white)
+                            .bold()
+                    }
+                
+                Rectangle().frame(width: 350, height: 1)
+                    .foregroundColor(.white)
+                
+                Button {
+                    login()
+                } label: {
+                    Text("Login")
+                        .bold()
+                        .frame(width:200, height:40)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .fill(.linearGradient(colors:[.teal, .green], startPoint: .top , endPoint: .bottomTrailing))
+                        )
+                        .foregroundColor(.white)
+                }
+                .padding(.top)
+                .offset(y:100)
+                
+                Button {
+                    isOnSignUp=true
+                } label : {
+                    Text("Don't have an account? Sign Up")
+                        .bold()
+                        .foregroundColor(.white)
+                }
+                .padding(.top)
+                .offset(y:110)
+            }
+            .frame(width: 350)
+            .onAppear() {
+                Auth.auth().addStateDidChangeListener { auth, user in
+                    if user != nil {
+                        userIsLoggedIn = true
                     }
                 }
             }
@@ -323,10 +392,13 @@ struct ContentView: View {
         }).resume()
     }
     
+    
     func login() {
         Auth.auth().signIn(withEmail: email, password: password){
             result, error in if error != nil{
                 print(error!.localizedDescription)
+            } else if error == nil {
+                userIsLoggedIn=true;
             }
         }
     }
@@ -337,6 +409,7 @@ struct ContentView: View {
         } catch let signOutError as NSError {
           print("Error signing out: %@", signOutError)
         }
+        
         userIsLoggedIn=false
     }
     
@@ -344,8 +417,11 @@ struct ContentView: View {
         Auth.auth().createUser(withEmail: email, password: password) {
             result, error in if error != nil{
                 print(error!.localizedDescription)
+            } else if error == nil {
+                userIsLoggedIn=true;
             }
         }
+        
     }
 }
 
