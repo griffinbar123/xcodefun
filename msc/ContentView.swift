@@ -160,7 +160,7 @@ struct ContentView: View {
                           .resizable()
                           .aspectRatio(contentMode: .fill)
                           
-                  } placeholder: {
+                  } placeholder: {//hi
                       Color.gray
                   }
                   .frame(width: 85, height: 85).offset(x:5)
